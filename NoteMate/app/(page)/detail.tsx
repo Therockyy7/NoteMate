@@ -11,7 +11,8 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import * as React from "react";
+import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { useTheme } from "../../contexts/ThemeContext";
 import axios from "axios";
@@ -20,7 +21,7 @@ import Loader from "../../components/Loader";
 import { API_URL } from "../../constants/api";
 import { useAuthStore } from "../../store/authStore";
 import { useFocusEffect } from "@react-navigation/native";
-import { debounce } from "lodash";
+import { debounce, set } from "lodash";
 import createDetailStyles from "../../assets/styles/detail.styles";
  // Đảm bảo bạn đã import component này
 
@@ -36,6 +37,8 @@ const Detail = () => {
   const [loading, setLoading] = useState(false);
   const [contentBook, setContentBook] = useState("");
   const [editNote, setEditNote] = useState(true); // Tạm thời đặt cứng nếu chưa có logic khác
+  const [bookUserId, setBookUserId] = useState<string | null>(null);
+  const [userRequestId, setUserRequestId] = useState<string | null>(null);
 
   const fetchDataBook = async () => {
     try {
@@ -45,6 +48,11 @@ const Detail = () => {
           "Content-Type": "application/json",
         },
       });
+      // console.log("user Book detail response: ", response.data.book.user);
+      // console.log("userRequest: ",response.data.userRequest.userId);
+      
+      setUserRequestId(response.data.userRequest.userId);
+      setBookUserId(response.data.book.user);
       setContentBook(response.data.book.content);
       setNote(response.data.book.content);
     } catch (error) {
@@ -80,6 +88,9 @@ const Detail = () => {
     }, [id])
   );
 
+  // console.log("Content Book user ID: ", );
+  
+
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -92,6 +103,8 @@ const Detail = () => {
       allowsEditing: true,
       quality: 0.8,
     });
+
+  
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
@@ -143,7 +156,7 @@ const Detail = () => {
               style={styles.buttonSubmit}
               onPress={() => router.back()}
             >
-              <Text style={styles.headerTitle}>Back</Text>
+              <Text style={style.headerTitle}>Back</Text>
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Book Note</Text>
           </View>
@@ -156,21 +169,31 @@ const Detail = () => {
               textAlignVertical="top"
               value={note}
               onChangeText={setNote}
-              editable={editNote}
+              editable={editNote && bookUserId === userRequestId}
             />
           </View>
 
-          <View style={style.footer}>
-            <TouchableOpacity style={styles.AIbutton} onPress={pickImage}>
-              <Image
-                source={require("../../assets/images/i.png")}
-                style={style.AIicon}
-                />
-              <Text style={style.AIlabel}>NOTE AI</Text>
-            </TouchableOpacity>
-                <AiVoice note={note} setNote={setNote} />
+          {
+            bookUserId !== userRequestId ? (
+              <Text style={{ color: COLORS.textSecondary, marginBottom: 10 }}>
+                Bạn không có quyền chỉnh sửa ghi chú này.
+              </Text>
+            ) : (
+                    <View style={style.footer}>
+                      <TouchableOpacity style={styles.AIbutton} onPress={pickImage}>
+                        <Image
+                          source={require("../../assets/images/i.png")}
+                          style={style.AIicon}
+                          />
+                        <Text style={style.AIlabel}>NOTE AI</Text>
+                      </TouchableOpacity>
+                          <AiVoice note={note} setNote={setNote} />
 
-          </View>
+                    </View>
+            )
+          }
+
+          
 
         </View>
       </ScrollView>
@@ -179,6 +202,8 @@ const Detail = () => {
 };
 
 const style = StyleSheet.create({
+  
+  
   container: {
     flex: 1,
     backgroundColor: "#fff",

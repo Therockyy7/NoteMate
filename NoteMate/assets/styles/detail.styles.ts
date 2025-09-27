@@ -65,6 +65,7 @@ const createDetailStyles = (colors: ThemeType) =>
       fontFamily: "JetBrainsMono-Medium",
       letterSpacing: 0.5,
       color: colors.primary,
+      
       marginBottom: 8,
     },
     buttonSubmit: {

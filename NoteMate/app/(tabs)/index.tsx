@@ -9,7 +9,7 @@ import {
   Alert,
   TextInput,
 } from "react-native";
-import React, { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../store/authStore";
 import { API_URL, BACKEND_URL } from "../../constants/api";
@@ -59,7 +59,7 @@ const Home = () => {
   }, [searchText]);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchFavorites();
       fetchBooks(1, true);
     }, [])
