@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { API_URL } from "../../constants/api";
+import ProButton from "../../components/ProButton";
 import LogoutButton from "../../components/LogoutButton";
 import { useAuthStore } from "../../store/authStore";
 import { useRouter } from "expo-router";
@@ -23,6 +24,7 @@ const Setting = ({ navigation }: any) => {
   const [offlineMode, setOfflineMode] = useState(true);
   const [pushNotification, setPushNotification] = useState(false);
   const [soundEffects, setSoundEffects] = useState(true);
+  const [autoPro, setAutoPro] = useState(true);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -45,6 +47,7 @@ const Setting = ({ navigation }: any) => {
   const { colors, theme, setTheme } = useTheme();
   const styles = createSettingStyles(colors);
   const [isThemeModalVisible, setThemeModalVisible] = useState(false);
+  const [showPro, setShowPro] = useState(false);
 
   const handleThemeChange = (
     newTheme: "forest" | "retro" | "ocean" | "blossom"
@@ -205,9 +208,7 @@ const Setting = ({ navigation }: any) => {
       >
         <Ionicons name="arrow-back" size={20} color="black" />
       </TouchableOpacity>
-
       <Text style={styles.header}>Settings</Text>
-
       {/* Personal Info */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Personal Information</Text>
@@ -281,7 +282,7 @@ const Setting = ({ navigation }: any) => {
           </View>
         </View>
       </View>
-
+      <ProButton />
       {/* Offline Studying */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Offline Studying</Text>
@@ -295,7 +296,6 @@ const Setting = ({ navigation }: any) => {
           />
         </View>
       </View>
-
       {/* Preferences */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Preferences</Text>
@@ -317,6 +317,18 @@ const Setting = ({ navigation }: any) => {
             <Switch
               value={soundEffects}
               onValueChange={setSoundEffects}
+              trackColor={{
+                true: colors.primary,
+                false: colors.placeholderText,
+              }}
+              thumbColor="#fff"
+            />
+          </View>
+          <View style={styles.rowBetween}>
+            <Text style={styles.value}>Auto sign up for Pro</Text>
+            <Switch
+              value={autoPro}
+              onValueChange={setAutoPro}
               trackColor={{
                 true: colors.primary,
                 false: colors.placeholderText,
@@ -356,15 +368,11 @@ const Setting = ({ navigation }: any) => {
           onSelectTheme={handleThemeChange as (theme: string) => void}
         />
       </View>
-
       {/* Logout & Delete */}
-
       <LogoutButton />
-
       <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
         <Text style={styles.deleteText}>Delete account</Text>
       </TouchableOpacity>
-
       {/* Change Password Modal */}
       <Modal visible={showPasswordModal} animationType="slide" transparent>
         <View style={styles.modalContainer}>

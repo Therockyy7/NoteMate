@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   Image,
   ActivityIndicator,
   Alert,
-} from 'react-native';
+} from "react-native";
 import {
   useAudioRecorder,
   useAudioRecorderState,
@@ -15,23 +15,25 @@ import {
   setAudioModeAsync,
   RecordingPresets,
   useAudioPlayer,
-} from 'expo-audio';
-import * as FileSystem from 'expo-file-system';
-import { API_URL } from '../../constants/api';
-
+} from "expo-audio";
+import * as FileSystem from "expo-file-system/legacy";
+import { API_URL } from "../../constants/api";
+import { useAuthStore } from "../../store/authStore.js";
 
 interface AiVoiceProps {
   note: string;
   setNote: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
+export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote }) => {
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(audioRecorder);
 
-  const [recordedUri, setRecordedUri] = useState('');
+  const [recordedUri, setRecordedUri] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [transcript, setTranscript] = useState("");
 
   // Player setup: chỉ tạo player nếu đã có recordedUri
   const player = useAudioPlayer(recordedUri ? { uri: recordedUri } : null);
@@ -40,7 +42,7 @@ export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
     (async () => {
       const status = await AudioModule.requestRecordingPermissionsAsync();
       if (!status.granted) {
-        Alert.alert('Permission to access microphone was denied');
+        Alert.alert("Permission to access microphone was denied");
         return;
       }
 
@@ -71,16 +73,17 @@ export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
       const fileInfo = await FileSystem.getInfoAsync(recordedUri);
 
       const formData = new FormData();
-      formData.append('file', {
+      formData.append("file", {
         uri: fileInfo.uri,
-        name: 'voice.wav',
-        type: 'audio/wav',
+        name: "voice.wav",
+        type: "audio/wav",
       } as any);
 
       const response = await fetch(`${API_URL}/AI/voice-to-text`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -88,11 +91,11 @@ export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
       const result = await response.json();
       console.log("Result /voice-to-text: ", result);
       console.log("Result /voice-to-text: ", result.text);
-      
-      setTranscript(result.text || 'Không nhận được văn bản.');
-      setNote(result.text)
+
+      setTranscript(result.text || "Không nhận được văn bản.");
+      setNote(result.text);
     } catch (err) {
-      console.error('Upload failed:', err);
+      console.error("Upload failed:", err);
     } finally {
       setIsSending(false);
     }
@@ -104,15 +107,30 @@ export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
         style={styles.AIbutton}
         onPress={recorderState.isRecording ? stopRecording : startRecording}
       >
-        <Image source={require('../../assets/images/i.png')} style={styles.AIicon} />
+        <Image
+          source={require("../../assets/images/i.png")}
+          style={styles.AIicon}
+        />
         <Text style={styles.AIlabel}>
-          {recorderState.isRecording ? 'ĐANG GHI...' : 'GHI ÂM'}
+          {recorderState.isRecording ? "ĐANG GHI..." : "GHI ÂM"}
         </Text>
       </TouchableOpacity>
 
-      {recordedUri !== '' && (
+      {recordedUri !== "" && (
         <>
-          <TouchableOpacity style={styles.sendButton} onPress={sendAudioToServer}>
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => {
+              if (!user?.isPro) {
+                Alert.alert(
+                  "Chức năng Pro",
+                  "Chức năng Ghi Âm AI chỉ dành cho người dùng Pro. Hãy nâng cấp gói của bạn 🚀"
+                );
+                return; // ngăn gửi audio nếu không phải Pro
+              }
+              sendAudioToServer(); // user là Pro → gửi audio
+            }}
+          >
             <Text style={styles.sendLabel}>GỬI ĐẾN AI</Text>
           </TouchableOpacity>
 
@@ -128,7 +146,13 @@ export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
         </>
       )}
 
-      {isSending && <ActivityIndicator size="small" color="#FF8A4C" style={{ marginTop: 12 }} />}
+      {isSending && (
+        <ActivityIndicator
+          size="small"
+          color="#FF8A4C"
+          style={{ marginTop: 12 }}
+        />
+      )}
 
       {/* {transcript !== '' && (
         <View style={styles.resultContainer}>
@@ -143,63 +167,63 @@ export const AiVoice: React.FC<AiVoiceProps> = ({ note, setNote}) => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   playButton: {
     marginTop: 10,
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
   playLabel: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   AIbutton: {
-    backgroundColor: '#FF8A4C',
+    backgroundColor: "#FF8A4C",
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
   },
   AIicon: {
     width: 24,
     height: 24,
-    resizeMode: 'contain',
-    tintColor: '#fff',
+    resizeMode: "contain",
+    tintColor: "#fff",
     marginBottom: 4,
   },
   AIlabel: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#fff',
+    fontWeight: "500",
+    color: "#fff",
   },
   sendButton: {
     marginTop: 16,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
   sendLabel: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   resultContainer: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#EFEFEF',
+    backgroundColor: "#EFEFEF",
     borderRadius: 8,
-    width: '100%',
+    width: "100%",
   },
   resultLabel: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   resultText: {
-    color: '#333',
+    color: "#333",
   },
 });

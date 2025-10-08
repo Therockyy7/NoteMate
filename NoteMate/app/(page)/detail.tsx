@@ -23,7 +23,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useFocusEffect } from "@react-navigation/native";
 import { debounce, set } from "lodash";
 import createDetailStyles from "../../assets/styles/detail.styles";
- // Đảm bảo bạn đã import component này
+// Đảm bảo bạn đã import component này
 
 import { AiVoice } from "../../components/AiComponent/AiVoice";
 import COLORS from "../../constants/colors";
@@ -39,6 +39,7 @@ const Detail = () => {
   const [editNote, setEditNote] = useState(true); // Tạm thời đặt cứng nếu chưa có logic khác
   const [bookUserId, setBookUserId] = useState<string | null>(null);
   const [userRequestId, setUserRequestId] = useState<string | null>(null);
+  const { user } = useAuthStore();
 
   const fetchDataBook = async () => {
     try {
@@ -50,7 +51,7 @@ const Detail = () => {
       });
       // console.log("user Book detail response: ", response.data.book.user);
       // console.log("userRequest: ",response.data.userRequest.userId);
-      
+
       setUserRequestId(response.data.userRequest.userId);
       setBookUserId(response.data.book.user);
       setContentBook(response.data.book.content);
@@ -89,7 +90,6 @@ const Detail = () => {
   );
 
   // console.log("Content Book user ID: ", );
-  
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -103,8 +103,6 @@ const Detail = () => {
       allowsEditing: true,
       quality: 0.8,
     });
-
-  
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
@@ -121,7 +119,10 @@ const Detail = () => {
           "http://10.0.2.2:3000/api/AI/upload",
           formData,
           {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
@@ -173,28 +174,36 @@ const Detail = () => {
             />
           </View>
 
-          {
-            bookUserId !== userRequestId ? (
-              <Text style={{ color: COLORS.textSecondary, marginBottom: 10 }}>
-                Bạn không có quyền chỉnh sửa ghi chú này.
-              </Text>
-            ) : (
-                    <View style={style.footer}>
-                      <TouchableOpacity style={styles.AIbutton} onPress={pickImage}>
-                        <Image
-                          source={require("../../assets/images/i.png")}
-                          style={style.AIicon}
-                          />
-                        <Text style={style.AIlabel}>NOTE AI</Text>
-                      </TouchableOpacity>
-                          <AiVoice note={note} setNote={setNote} />
+          {bookUserId !== userRequestId ? (
+            <Text style={{ color: COLORS.textSecondary, marginBottom: 10 }}>
+              Bạn không có quyền chỉnh sửa ghi chú này.
+            </Text>
+          ) : (
+            <View style={style.footer}>
+              <TouchableOpacity
+                style={styles.AIbutton}
+                onPress={() => {
+                  if (!user?.isPro) {
+                    // Hiển thị thông báo ngay lập tức
+                    Alert.alert(
+                      "Chức năng Pro",
+                      "Chức năng NOTE AI chỉ dành cho người dùng Pro. Hãy nâng cấp gói của bạn 🚀"
+                    );
+                    return; // ngăn người dùng mở picker
+                  }
+                  pickImage(); // user là Pro → tiếp tục
+                }}
+              >
+                <Image
+                  source={require("../../assets/images/i.png")}
+                  style={style.AIicon}
+                />
+                <Text style={style.AIlabel}>NOTE AI</Text>
+              </TouchableOpacity>
 
-                    </View>
-            )
-          }
-
-          
-
+              <AiVoice note={note} setNote={setNote} />
+            </View>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -202,8 +211,6 @@ const Detail = () => {
 };
 
 const style = StyleSheet.create({
-  
-  
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -232,45 +239,45 @@ const style = StyleSheet.create({
     alignItems: "center",
   },
   footer: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 4, // nhỏ hơn
-  backgroundColor: "#FAFAFA",
-  paddingVertical: 4, // giảm bớt
-  paddingHorizontal: 8, // giảm bớt
-  borderRadius: 8, // gọn hơn
-  marginBottom: 12, // ngắn hơn
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.04,
-  shadowRadius: 1.5,
-  elevation: 1,
-  borderWidth: 1,
-  borderColor: "#e0e0e0",
-},
-AIbutton: {
-  flex: 1,
-  backgroundColor: "#FF8A4C",
-  borderRadius: 8,
-  paddingVertical: 6,
-  paddingHorizontal: 4,
-  alignItems: "center",
-  justifyContent: "center",
-  flexDirection: "column",
-},
-AIicon: {
-  width: 22,  // nhỏ hơn
-  height: 22, // nhỏ hơn
-  resizeMode: "contain",
-  tintColor: "#fff",
-  marginBottom: 2,
-},
-AIlabel: {
-  fontSize: 10, // nhỏ hơn
-  fontWeight: "500",
-  color: "#fff",
-},
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 4, // nhỏ hơn
+    backgroundColor: "#FAFAFA",
+    paddingVertical: 4, // giảm bớt
+    paddingHorizontal: 8, // giảm bớt
+    borderRadius: 8, // gọn hơn
+    marginBottom: 12, // ngắn hơn
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 1.5,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  AIbutton: {
+    flex: 1,
+    backgroundColor: "#FF8A4C",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+  },
+  AIicon: {
+    width: 22, // nhỏ hơn
+    height: 22, // nhỏ hơn
+    resizeMode: "contain",
+    tintColor: "#fff",
+    marginBottom: 2,
+  },
+  AIlabel: {
+    fontSize: 10, // nhỏ hơn
+    fontWeight: "500",
+    color: "#fff",
+  },
 
   header: {
     marginBottom: 10,

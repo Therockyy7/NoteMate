@@ -45,8 +45,8 @@ const Signup = () => {
       <View style={styles.container}>
         <View style={styles.card}>
           <View style={styles.header}>
-            <Text style={styles.title}>BookWorm</Text>
-            <Text style={styles.subtitle}>Share your favorite reads</Text>
+            <Text style={styles.title}>NoteMate</Text>
+            <Text style={styles.subtitle}>Share your note for learn</Text>
           </View>
 
           <View style={styles.formContainer}>
