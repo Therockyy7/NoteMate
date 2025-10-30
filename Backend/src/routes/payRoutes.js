@@ -44,9 +44,10 @@ router.post("/subscribe", protectRoute, async (req, res) => {
       vnp_TxnRef: txnRef,
       vnp_OrderInfo: orderInfo,
       //Nay la IP may' nen doi lai localhost:3000/4000
+      //May JRim
+      vnp_ReturnUrl: `http://192.168.0.111:3000/api/payment/callback-vnpay?txnRef=${txnRef}&duration=${planDuration}&userId=${user._id}`,
+      //Mang Truong FPT
       // vnp_ReturnUrl: `http://10.12.48.155:3000/api/payment/callback-vnpay?txnRef=${txnRef}&duration=${planDuration}&userId=${user._id}`,
-
-      vnp_ReturnUrl: `http:// 192.168.1.6:3000/api/payment/callback-vnpay?txnRef=${txnRef}&duration=${planDuration}&userId=${user._id}`,
       vnp_OrderType: ProductCode.Other,
       vnp_Locale: VnpLocale.VN,
       vnp_CreateDate: dateFormat(new Date(), "yyyymmddHHMMss"),
