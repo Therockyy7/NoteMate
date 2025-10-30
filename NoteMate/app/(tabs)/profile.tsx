@@ -83,6 +83,15 @@ const Profile = () => {
     }
   };
 
+  const daysLeft =
+    userInfo?.subscription?.status === "active" && userInfo.subscription.endDate
+      ? Math.ceil(
+          (new Date(userInfo.subscription.endDate).getTime() -
+            new Date().getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 0;
+
   const fetchUserBooks = async () => {
     try {
       const response = await fetch(`${API_URL}/books/user`, {
@@ -308,8 +317,52 @@ const Profile = () => {
         </View>
         {/* User info in a separate column */}
         <View style={{ flex: 1, justifyContent: "center" }}>
-          <Text style={styles.username}>{userInfo?.username}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.username}>{userInfo?.username}</Text>
+            {userInfo?.subscription?.status === "active" &&
+              userInfo?.subscription?.plan === "pro" && (
+                <View
+                  style={{
+                    backgroundColor: "#e17156",
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 4,
+                    marginLeft: 8,
+                  }}
+                >
+                  <Text
+                    style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}
+                  >
+                    PRO
+                  </Text>
+                </View>
+              )}
+          </View>
+
+          {userInfo?.subscription?.status === "active" && (
+            <Text
+              style={{
+                color: colors.textSecondary,
+                marginTop: 4,
+                fontSize: 13,
+              }}
+            >
+              {daysLeft > 0 && (
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    marginTop: 4,
+                    fontSize: 13,
+                  }}
+                >
+                  {daysLeft} days left
+                </Text>
+              )}
+            </Text>
+          )}
+
           <Text style={styles.email}>{userInfo?.email}</Text>
+
           <View style={{ marginTop: 8 }}>
             <Text style={styles.statsText}>📚 Total: {stats.total}</Text>
             <Text style={styles.statsText}>⭐ Avg: {stats.averageRating}</Text>

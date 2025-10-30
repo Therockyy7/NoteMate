@@ -85,11 +85,11 @@ router.get("/callback-vnpay", async (req, res) => {
     await user.save();
 
     //Success
-    res.json({
-      message: "Thanh toán thành công",
-      subscription: user.subscription,
-    });
-    // return res.redirect(`Notemate://successpayment?plan=${duration}`);
+    // res.json({
+    //   message: "Thanh toán thành công",
+    //   subscription: user.subscription,
+    // });
+    return res.redirect(`NoteMate://success-payment?plan=${duration}`);
   } catch (error) {
     console.error("Callback VNPay error:", error);
     res.status(500).json({ message: "Lỗi callback VNPay" });

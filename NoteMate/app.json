@@ -8,11 +8,13 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "NoteMate",
+    "deepLinks": ["Notemate://success-payment"],
     "splash": {
       "image": "./assets/logoNoteMate.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true
     },

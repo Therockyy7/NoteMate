@@ -38,7 +38,6 @@ export default function RootLayout() {
     console.log("inAuthGroup: ", segments[0]);
     console.log("user: ", user);
     console.log("Token: ", token);
-    
 
     if (!user && !token && !inAuthGroup) {
       router.replace("/(auth)");
@@ -62,3 +61,20 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
+export const linking = {
+  prefixes: ["NoteMate://"],
+  config: {
+    screens: {
+      "(tabs)": {
+        screens: {
+          "success-payment": "success-payment", // Deep link mở trang này
+        },
+      },
+      // Nếu screen không nằm trong (tabs) thì để ngoài
+      "success-payment": "success-payment",
+
+      "(auth)": "*",
+      "(page)": "*",
+    },
+  },
+};
